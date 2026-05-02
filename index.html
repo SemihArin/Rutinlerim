@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Minik Rutin">
+    <meta name="theme-color" content="#ff8da1">
+    
+    <title>Minik Rutin 🌸</title>
+    
+    <link id="dynamic-favicon" rel="icon" type="image/svg+xml">
+    <link id="dynamic-manifest" rel="manifest">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --text-dark: #2d3748; --text-light: #718096;
+            --accent: #ff8da1; --timeline-line: #e2e8f0;
+            --danger: #ef4444; --edit: #3b82f6; --warning: #f59e0b;
+            --tok-bg: #e0e7ff; --tok-text: #3730a3;
+            --ac-bg: #fef08a; --ac-text: #854d0e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-gradient); display: flex; justify-content: center; align-items: flex-start; min-height: 100dvh; color: var(--text-dark); margin: 0; overflow: hidden; }
+
+        .app-container { width: 100%; max-width: 414px; height: 100dvh; background: #fafafa; position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+        @media (min-height: 800px) and (min-width: 500px) { body { align-items: center; } .app-container { height: 90vh; max-height: 896px; border-radius: 40px; border: 8px solid #fff; } }
+
+        .header { padding: 25px 25px 15px; }
+        .header h1 { font-size: 24px; font-weight: 900; color: var(--accent); }
+        
+        .date-navigator { display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: white; padding: 8px 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .btn-date { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 10px; color: var(--text-dark); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-date:active { transform: scale(0.9); }
+        .current-date { font-weight: 800; font-size: 14px; color: var(--text-dark); }
+
+        .smart-widget { margin: 0 25px 15px; padding: 20px; background: linear-gradient(135deg, #ff9fb3 0%, #ff8da1 100%); border-radius: 24px; color: white; box-shadow: 0 10px 20px rgba(255, 141, 161, 0.3); display: flex; flex-direction: column; gap: 15px; transition: background 0.4s; }
+        .smart-widget.overdue { background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
+        .widget-top { display: flex; justify-content: space-between; align-items: center; }
+        .widget-top h3 { font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+        .widget-top .pill-name { font-size: 20px; font-weight: 900; }
+        .widget-top .time { font-size: 18px; font-weight: 800; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 12px; }
+        
+        .progress-container { width: 100%; }
+        .progress-text { font-size: 11px; font-weight: 700; margin-bottom: 5px; display: flex; justify-content: space-between; opacity: 0.9; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: white; border-radius: 4px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 0%; }
+
+        .shelf-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; padding: 0 25px 15px; min-height: 100px; }
+        .shelf-carousel::-webkit-scrollbar { display: none; }
+        .med-card { position: relative; min-width: 90px; background: white; padding: 15px 10px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
+        .med-card svg { width: 35px; height: 35px; margin-bottom: 8px; }
+        .med-card span { font-size: 11px; font-weight: 800; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-dark); }
+        
+        .stock-badge { position: absolute; top: -5px; right: -5px; background: var(--timeline-line); color: var(--text-dark); font-size: 10px; font-weight: 900; padding: 3px 6px; border-radius: 10px; border: 2px solid #fafafa; }
+        .stock-badge.low { background: var(--danger); color: white; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); } 100% { transform: scale(1); } }
+
+        .timeline-container { flex: 1; padding: 0 25px 100px; overflow-y: auto; }
+        .timeline { position: relative; padding-left: 20px; }
+        .timeline::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 0; width: 2px; background: var(--timeline-line); }
+
+        .t-item { position: relative; margin-bottom: 25px; display: flex; align-items: flex-start; gap: 15px; transform: translate3d(0,0,0); }
+        .check-container { position: absolute; left: -32px; top: 20px; transform: translateY(-50%); width: 26px; height: 26px; z-index: 2; cursor: pointer; background: white; border-radius: 50%; }
+        .check-circle { fill: white; stroke: var(--timeline-line); stroke-width: 2; transition: all 0.3s; }
+        .check-path { fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        
+        .t-item.done .check-circle { fill: var(--accent); stroke: var(--accent); }
+        .t-item.done .t-content { opacity: 0.6; }
+        .t-item.done .t-time { text-decoration: line-through; color: #cbd5e1; }
+
+        .t-time { font-size: 14px; font-weight: 900; color: var(--text-light); min-width: 45px; margin-top: 10px; }
+        .t-content { flex: 1; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); transition: transform 0.15s; }
+        .t-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .t-header h4 { font-size: 15px; margin: 0; font-weight: 800; }
+        .t-tags { display: flex; gap: 6px; }
+        .tag { font-size: 9px; font-weight: 900; padding: 3px 7px; border-radius: 6px; }
+        .tag-tok { background: var(--tok-bg); color: var(--tok-text); }
+        .tag-ac { background: var(--ac-bg); color: var(--ac-text); }
+        .tag-dose { background: #f1f5f9; color: #475569; }
+
+        .action-btns { display: flex; gap: 5px; }
+        .btn-action { background: none; border: none; padding: 4px; cursor: pointer; opacity: 0.3; transition: 0.2s; }
+        .btn-action:hover { opacity: 1; transform: scale(1.1); }
+        .btn-action svg { width: 16px; height: 16px; stroke-width: 2; fill: none; stroke-linecap: round; }
+
+        .fab { position: absolute; bottom: 30px; right: 25px; width: 60px; height: 60px; border-radius: 30px; background: var(--accent); color: white; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 10px 25px rgba(255, 141, 161, 0.4); z-index: 10; cursor: pointer; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.9); }
+
+        .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; opacity: 0; }
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 35px 35px 0 0; padding: 25px; display: none; flex-direction: column; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); transform: translate3d(0, 100%, 0); max-height: 85vh; overflow-y: auto; padding-bottom: calc(25px + env(safe-area-inset-bottom)); }
+        #mainSheet { z-index: 101; } #timeSheet { z-index: 102; background: #fafafa; }
+        .drag-handle { width: 40px; height: 5px; background: #e2e8f0; border-radius: 5px; margin: 0 auto 20px; flex-shrink: 0; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-light); margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 14px; border-radius: 14px; border: 2px solid #f1f5f9; font-size: 15px; font-weight: 600; outline: none; background: #fafafa; }
+        .form-control:focus { border-color: var(--accent); background: white; }
+        
+        .flex-row { display: flex; gap: 10px; }
+        .toggle-btn { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #f1f5f9; background: white; font-weight: 800; font-size: 13px; cursor: pointer; }
+        .toggle-btn.selected.tok { background: var(--tok-bg); color: var(--tok-text); border-color: var(--tok-text); }
+        .toggle-btn.selected.ac { background: var(--ac-bg); color: var(--ac-text); border-color: var(--ac-text); }
+
+        .icon-slider { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scroll-snap-type: x mandatory; }
+        .icon-slider::-webkit-scrollbar { display: none; }
+        .icon-btn { flex: 0 0 55px; height: 55px; border-radius: 14px; border: 2px solid #f1f5f9; background: white; display: flex; justify-content: center; align-items: center; cursor: pointer; scroll-snap-align: start; }
+        .icon-btn.selected { border-color: var(--accent); background: #fff0f5; transform: scale(1.05); }
+        .icon-btn svg { width: 30px; height: 30px; }
+
+        .btn-time-picker { width: 100%; padding: 15px; border-radius: 14px; border: 2px dashed var(--accent); background: #fff0f5; color: var(--accent); font-weight: 800; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        
+        .time-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .btn-remove-time { background: #fee2e2; color: #ef4444; border: none; width: 45px; height: 45px; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .btn-save { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 18px; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <script>
+        const svgFlower = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='25' r='20' fill='%23ff8da1'/><circle cx='75' cy='45' r='20' fill='%23ff8da1'/><circle cx='65' cy='75' r='20' fill='%23ff8da1'/><circle cx='35' cy='75' r='20' fill='%23ff8da1'/><circle cx='25' cy='45' r='20' fill='%23ff8da1'/><circle cx='50' cy='50' r='15' fill='%23fdfbfb'/></svg>`;
+        
+        // Faviconu Ata
+        document.getElementById('dynamic-favicon').href = `data:image/svg+xml,${svgFlower}`;
+
+        // Manifest (PWA) Yapısını Oluştur ve Ata
+        const manifestData = {
+            name: "Minik Rutin",
+            short_name: "Rutin",
+            start_url: ".",
+            display: "standalone",
+            background_color: "#fdfbfb",
+            theme_color: "#ff8da1",
+            icons: [{
+                src: `data:image/svg+xml,${svgFlower}`,
+                sizes: "192x192",
+                type: "image/svg+xml"
+            }]
+        };
+        const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+        document.getElementById('dynamic-manifest').href = URL.createObjectURL(blob);
+    </script>
+
+    <svg style="display: none;">
+        <symbol id="icon-kapsul" viewBox="0 0 24 24"><path d="M12 2C9.2 2 7 4.2 7 7V12H17V7C17 4.2 14.8 2 12 2Z" fill="#ff708a"/><path d="M7 12V17C7 19.8 9.2 22 12 22C14.8 22 17 19.8 17 17V12H7Z" fill="#fde047"/><rect x="7" y="11" width="10" height="2" fill="#ffffff" opacity="0.5"/></symbol>
+        <symbol id="icon-hap" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#a0c4ff"/><line x1="6" y1="12" x2="18" y2="12" stroke="#ffffff" stroke-width="2.5"/></symbol>
+        <symbol id="icon-sise" viewBox="0 0 24 24"><path d="M15 8H9V5C9 3.9 9.9 3 11 3H13C14.1 3 15 3.9 15 5V8Z" fill="#cbd5e1"/><path d="M6 10C6 8.9 6.9 8 8 8H16C17.1 8 18 8.9 18 10V20C18 21.1 17.1 22 16 22H8C6.9 22 6 21.1 6 20V10Z" fill="#c084f5"/><rect x="9" y="12" width="6" height="7" rx="1" fill="#ffffff"/><line x1="10" y1="14" x2="14" y2="14" stroke="#c084f5" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="16" x2="12" y2="16" stroke="#c084f5" stroke-width="1.5" stroke-linecap="round"/></symbol>
+        <symbol id="icon-damla" viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15C5 18.9 8.1 22 12 22C15.9 22 19 18.9 19 15C19 10 12 2 12 2Z" fill="#38bdf8"/><ellipse cx="9.5" cy="14" rx="1.5" ry="3.5" fill="#ffffff" opacity="0.6" transform="rotate(-20 9.5 14)"/></symbol>
+        <symbol id="icon-krem" viewBox="0 0 24 24"><path d="M8 3H16V5H8V3Z" fill="#94a3b8"/><path d="M6 21H18L17 5H7L6 21Z" fill="#fbd38d"/><path d="M7 5H17L16.5 12H7.5L7 5Z" fill="#f6ad55"/></symbol>
+    </svg>
+
+    <div class="app-container">
+        
+        <div class="header">
+            <h1>Rutinlerim ✨</h1>
+            <div class="date-navigator">
+                <button class="btn-date" onclick="changeDate(-1)">&#8592;</button>
+                <div class="current-date" id="dateDisplay">Bugün</div>
+                <button class="btn-date" onclick="changeDate(1)">&#8594;</button>
+            </div>
+        </div>
+
+        <div class="smart-widget" id="smartWidget">
+            <div class="widget-top">
+                <div><h3 id="widgetTitle">Yükleniyor...</h3><div class="pill-name" id="nextPillName">-</div></div>
+                <div class="time" id="nextPillTime">-</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-text"><span id="progressLabel">İlerleme</span><span id="progressPercent">0%</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+        </div>
+
+        <div class="shelf-carousel" id="medicineShelf"></div>
+        
+        <div class="timeline-container">
+            <div class="timeline" id="timelineList"></div>
+        </div>
+
+        <button class="fab" onclick="openAddModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+
+        <div class="modal-overlay" id="modalOverlay" onclick="closeAllModals()"></div>
+
+        <div class="bottom-sheet" id="mainSheet">
+            <div class="drag-handle"></div>
+            <h2 id="mainModalTitle" style="font-weight:900; margin-bottom:20px;">Yeni İlaç Ekle</h2>
+            
+            <div class="form-group"><label>İlaç Adı</label><input type="text" id="medName" class="form-control"></div>
+            
+            <div class="form-group">
+                <label>Görünüm Seç</label>
+                <div class="icon-slider">
+                    <div class="icon-btn selected" id="i-kapsul" onclick="setI('kapsul')"><svg><use href="#icon-kapsul"></use></svg></div>
+                    <div class="icon-btn" id="i-hap" onclick="setI('hap')"><svg><use href="#icon-hap"></use></svg></div>
+                    <div class="icon-btn" id="i-sise" onclick="setI('sise')"><svg><use href="#icon-sise"></use></svg></div>
+                    <div class="icon-btn" id="i-damla" onclick="setI('damla')"><svg><use href="#icon-damla"></use></svg></div>
+                    <div class="icon-btn" id="i-krem" onclick="setI('krem')"><svg><use href="#icon-krem"></use></svg></div>
+                </div>
+            </div>
+
+            <div class="flex-row">
+                <div class="form-group" style="flex:1.2;">
+                    <label>Nasıl?</label>
+                    <div style="display:flex; gap:5px;">
+                        <button class="toggle-btn tok selected" id="bt" onclick="setS('tok')">🍔 Tok</button>
+                        <button class="toggle-btn ac" id="ba" onclick="setS('ac')">🍽️ Aç</button>
+                    </div>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Miktar (Doz)</label>
+                    <input type="text" id="medDose" class="form-control" placeholder="1 Adet">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Kutu Stoğu (Kaç kullanım var?)</label>
+                <input type="number" id="medStock" class="form-control" placeholder="Örn: 30" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Ne Zaman?</label>
+                <button class="btn-time-picker" id="stBtn" onclick="toggleTimeM(true)">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Saatleri Belirle
+                </button>
+                <div id="selectedTimesDisplay" style="margin-top:10px; display:flex; gap:5px; flex-wrap:wrap;"></div>
+            </div>
+
+            <button class="btn-save" onclick="saveMed()">Kaydet</button>
+        </div>
+
+        <div class="bottom-sheet" id="timeSheet">
+            <div style="display:flex; align-items:center; margin-bottom:15px;">
+                <button onclick="toggleTimeM(false)" style="background:none; border:none; cursor:pointer; margin-right:15px;"><svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--text-dark)" stroke-width="2.5" fill="none"><path d="M15 18l-6-6 6-6"></path></svg></button>
+                <h2 style="font-weight:900; margin:0;">Saatleri Ayarla</h2>
+            </div>
+            <p style="font-size:13px; color:var(--text-light); margin-bottom:20px;">Günde kaç defa içeceksen ekle.</p>
+            <div id="tList"></div>
+            <button onclick="addTRow()" style="width:100%; padding:14px; border:none; background:#e2e8f0; border-radius:14px; font-weight:900; margin:10px 0; cursor:pointer; color:var(--text-dark);">+ Yeni Saat Ekle</button>
+            <button class="btn-save" style="margin-top:20px;" onclick="confirmT()">Onayla ve Dön</button>
+        </div>
+    </div>
+
+    <script>
+        // --- INDEXED DB ENGINE (Sadeleştirildi) ---
+        const DB_NAME = "MinikRutinDB_v5";
+        const DB_VERSION = 3;
+        let db;
+
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains("meds")) db.createObjectStore("meds", { keyPath: "id" });
+            if (!db.objectStoreNames.contains("logs")) db.createObjectStore("logs", { keyPath: "logKey" });
+        };
+        request.onsuccess = (e) => { db = e.target.result; checkInitialData(); };
+
+        async function checkInitialData() {
+            const meds = await getAll("meds");
+            if (meds.length === 0) {
+                const init = [
+                    { id: "1", ad: "Feramat", icon: "hap", tok: false, doz: "1 Adet", saatler: ["08:00"], stok: 30 },
+                    { id: "2", ad: "Apikobal", icon: "hap", tok: true, doz: "1 Adet", saatler: ["09:30"], stok: 30 },
+                    { id: "3", ad: "Albuterol", icon: "damla", tok: true, doz: "1 Fıs", saatler: ["12:00"], stok: 120 },
+                    { id: "4", ad: "Levalbuterol", icon: "damla", tok: true, doz: "1 Fıs", saatler: ["16:00"], stok: 60 },
+                    { id: "5", ad: "İpratropium", icon: "damla", tok: true, doz: "1 Fıs", saatler: ["21:00"], stok: 60 }
+                ];
+                for (let m of init) await add("meds", m);
+            }
+            render();
+        }
+
+        function add(store, data) { return new Promise(res => { const tx = db.transaction(store, "readwrite"); tx.objectStore(store).put(data); tx.oncomplete = res; }); }
+        function getAll(store) { return new Promise(res => { const tx = db.transaction(store, "readonly"); const req = tx.objectStore(store).getAll(); req.onsuccess = () => res(req.result); }); }
+        function getById(store, id) { return new Promise(res => { const tx = db.transaction(store, "readonly"); const req = tx.objectStore(store).get(id); req.onsuccess = () => res(req.result); }); }
+        function del(store, id) { return new Promise(res => { const tx = db.transaction(store, "readwrite"); tx.objectStore(store).delete(id); tx.oncomplete = res; }); }
+
+        // --- ZAMAN MAKİNESİ (DATE LOGIC) ---
+        let activeDateObj = new Date();
+        function getLocalISODate(d) { const off = d.getTimezoneOffset()*60000; return (new Date(d - off)).toISOString().split('T')[0]; }
+        
+        function changeDate(offset) {
+            activeDateObj.setDate(activeDateObj.getDate() + offset);
+            render();
+        }
+
+        function updateDateUI() {
+            const todayStr = getLocalISODate(new Date());
+            const activeStr = getLocalISODate(activeDateObj);
+            const disp = document.getElementById('dateDisplay');
+            
+            if(activeStr === todayStr) disp.innerText = "Bugün";
+            else {
+                const diff = Math.round((activeDateObj.setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+                if(diff === -1) disp.innerText = "Dün";
+                else if(diff === 1) disp.innerText = "Yarın";
+                else disp.innerText = activeDateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+            }
+            return activeStr;
+        }
+
+        // --- UI & MODAL YÖNETİMİ ---
+        let sI = 'kapsul', sS = 'tok', cST = [], editId = null;
+
+        function setI(i) { document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('selected')); document.getElementById('i-'+i).classList.add('selected'); sI = i; }
+        function setS(s) { document.getElementById('bt').classList.toggle('selected', s==='tok'); document.getElementById('ba').classList.toggle('selected', s==='ac'); sS = s; }
+
+        function openAddModal() { 
+            editId = null; document.getElementById('mainModalTitle').innerText = "Yeni İlaç Ekle"; 
+            document.getElementById('medName').value = ""; document.getElementById('medDose').value = ""; document.getElementById('medStock').value = ""; 
+            cST = []; updateTimeBtnUI(); setI('kapsul'); setS('tok'); toggleMainM(true); 
+        }
+
+        async function editM(id) {
+            const m = await getById("meds", id);
+            if(!m) return;
+            editId = id; document.getElementById('mainModalTitle').innerText = "İlacı Düzenle";
+            document.getElementById('medName').value = m.ad; document.getElementById('medDose').value = m.doz; document.getElementById('medStock').value = m.stok;
+            setI(m.icon); setS(m.tok ? 'tok' : 'ac'); cST = [...m.saatler]; updateTimeBtnUI(); toggleMainM(true);
+        }
+
+        function toggleMainM(s) {
+            const ov = document.getElementById('modalOverlay'); const sh = document.getElementById('mainSheet');
+            if(s) { ov.style.display = 'block'; sh.style.display = 'flex'; anime({ targets: ov, opacity: 1, duration: 200 }); anime({ targets: sh, translateY: ['100%', '0%'], duration: 300, easing: 'easeOutCubic' }); } 
+            else { anime({ targets: ov, opacity: 0, duration: 200, complete:()=>ov.style.display='none' }); anime({ targets: sh, translateY: '100%', duration: 250, easing: 'easeInCubic', complete:()=>sh.style.display='none' }); }
+        }
+
+        function toggleTimeM(s) { 
+            const sh = document.getElementById('timeSheet'); 
+            if(s) { sh.style.display = 'flex'; anime({ targets: sh, translateY: ['100%', '0%'], duration: 300, easing: 'easeOutCubic' }); const l = document.getElementById('tList'); l.innerHTML = ''; (cST.length ? cST : ['']).forEach(t => addTRow(t)); } 
+            else { anime({ targets: sh, translateY: '100%', duration: 250, easing: 'easeInCubic', complete:()=>sh.style.display='none' }); }
+        }
+
+        function addTRow(v='') {
+            const r = document.createElement('div'); r.className = 'time-row';
+            r.innerHTML = `<input type="time" class="form-control t-inp" value="${v}" required><button class="btn-remove-time" onclick="this.parentElement.remove()">×</button>`;
+            document.getElementById('tList').appendChild(r);
+        }
+
+        function confirmT() { cST = [...new Set(Array.from(document.querySelectorAll('.t-inp')).map(i => i.value).filter(v => v))].sort(); updateTimeBtnUI(); toggleTimeM(false); }
+
+        function updateTimeBtnUI() {
+            const btn = document.getElementById('stBtn'); const disp = document.getElementById('selectedTimesDisplay');
+            if(cST.length > 0) { btn.innerHTML = `✔️ ${cST.length} Vakit Seçildi`; btn.style.background = '#dcfce7'; btn.style.borderColor = '#22c55e'; btn.style.color = '#166534'; disp.innerHTML = cST.map(t => `<span class="tag tag-dose">${t}</span>`).join(''); } 
+            else { btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Saatleri Belirle`; btn.style.background = '#fff0f5'; btn.style.borderColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; disp.innerHTML = ''; }
+        }
+
+        function closeAllModals() { toggleTimeM(false); toggleMainM(false); }
+
+        // --- VERİTABANI İŞLEMLERİ ---
+        async function saveMed() {
+            const ad = document.getElementById('medName').value.trim(); const stokVal = document.getElementById('medStock').value;
+            if(!ad || !cST.length) return alert("İlaç adı ve en az bir saat girmelisin!");
+            const m = { id: editId || Date.now().toString(), ad, icon: sI, tok: sS === 'tok', doz: document.getElementById('medDose').value.trim() || '1 Adet', saatler: cST, stok: parseInt(stokVal) || 0 };
+            await add("meds", m); toggleMainM(false); render();
+        }
+
+        async function deleteM(id) { if(confirm("Bu ilacı komple silmek istediğine emin misin?")) { await del("meds", id); render(); } }
+
+        // --- ÇİZİM ANİMASYONU & STOK GÜNCELLEME ---
+        async function toggleCheck(element, medId, saat) {
+            const activeStr = getLocalISODate(activeDateObj);
+            const key = `${medId}-${saat}-${activeStr}`;
+            
+            const logs = await getAll("logs");
+            const isDone = logs.find(l => l.logKey === key);
+            const path = element.querySelector('.check-path');
+            const med = await getById("meds", medId);
+
+            if(isDone) {
+                await del("logs", key);
+                element.classList.remove('done');
+                anime({ targets: path, strokeDashoffset: [0, 50], duration: 300, easing: 'easeOutQuart' });
+                if(med) { med.stok += 1; await add("meds", med); } 
+            } else {
+                await add("logs", { logKey: key });
+                element.classList.add('done');
+                anime({ targets: element.querySelector('.t-content'), scale: [0.95, 1], duration: 400, easing: 'easeOutElastic(1, .6)' });
+                anime({ targets: path, strokeDashoffset: [50, 0], duration: 400, easing: 'easeInOutSine' });
+                if(med && med.stok > 0) { med.stok -= 1; await add("meds", med); }
+            }
+            render(true); 
+        }
+
+        async function render(soft = false) {
+            const activeStr = updateDateUI();
+            const todayStr = getLocalISODate(new Date());
+            
+            const meds = await getAll("meds");
+            const logs = await getAll("logs");
+
+            // SHELF & STOCK WARNING
+            const shelf = document.getElementById('medicineShelf');
+            shelf.innerHTML = meds.map(m => `
+                <div class="med-card">
+                    <div class="stock-badge ${m.stok < 5 ? 'low' : ''}">${m.stok}</div>
+                    <svg><use href="#icon-${m.icon}"></use></svg><span>${m.ad}</span>
+                </div>`).join('');
+            if(meds.length === 0) shelf.innerHTML = '<span style="font-size:12px; color:#aaa; margin-top:20px;">Raf boş.</span>';
+
+            // TIMELINE
+            const list = document.getElementById('timelineList');
+            const tasks = [];
+            meds.forEach(m => m.saatler.forEach(s => tasks.push({ ...m, s })));
+            tasks.sort((a,b) => a.s.localeCompare(b.s));
+
+            const now = new Date().toLocaleTimeString('tr-TR', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            let next = null;
+            let completedCount = 0;
+
+            list.innerHTML = tasks.map(t => {
+                const isDone = logs.some(l => l.logKey === `${t.id}-${t.s}-${activeStr}`);
+                if(isDone) completedCount++;
+                if(!isDone && !next && activeStr === todayStr && t.s >= now) next = t;
+                if(!isDone && !next && activeStr === todayStr && t.s < now) next = t; 
+                
+                const dash = isDone ? '0' : '50';
+                return `
+                <div class="t-item ${isDone ? 'done' : ''}" onclick="toggleCheck(this, '${t.id}', '${t.s}')">
+                    <div class="check-container"><svg viewBox="0 0 24 24" class="check-svg"><circle class="check-circle" cx="12" cy="12" r="11"></circle><path class="check-path" d="M7 12.5l3 3 7-7" style="stroke-dasharray:50; stroke-dashoffset:${dash}"></path></svg></div>
+                    <div class="t-time">${t.s}</div>
+                    <div class="t-content">
+                        <div class="t-header">
+                            <h4>${t.ad}</h4>
+                            <div class="action-btns">
+                                <button class="btn-action edit" onclick="event.stopPropagation(); editM('${t.id}')"><svg viewBox="0 0 24 24" stroke="var(--edit)"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+                                <button class="btn-action delete" onclick="event.stopPropagation(); deleteM('${t.id}')"><svg viewBox="0 0 24 24" stroke="var(--danger)"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path></svg></button>
+                            </div>
+                        </div>
+                        <div class="t-tags"><span class="tag ${t.tok?'tag-tok':'tag-ac'}">${t.tok?'🍔 TOK':'🍽️ AÇ'}</span><span class="tag tag-dose">${t.doz}</span></div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if(tasks.length === 0) list.innerHTML = `<p style="text-align:center; color:#aaa; font-size:13px; margin-top:20px;">Bu güne ait plan yok.</p>`;
+
+            // PROGRESS BAR & SMART WIDGET
+            const progressPercent = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
+            document.getElementById('progressPercent').innerText = `%${progressPercent}`;
+            document.getElementById('progressFill').style.width = `${progressPercent}%`;
+
+            const w = document.getElementById('smartWidget');
+            if(activeStr !== todayStr) {
+                w.classList.remove('overdue');
+                document.getElementById('widgetTitle').innerText = activeStr < todayStr ? "Geçmiş Özet" : "Gelecek Planı";
+                document.getElementById('nextPillName').innerText = progressPercent === 100 ? "Kusursuz Gün!" : `${tasks.length - completedCount} İlaç Kaldı`;
+                document.getElementById('nextPillTime').innerText = "📅";
+            } else if(next) {
+                const isOverdue = next.s < now;
+                document.getElementById('widgetTitle').innerText = isOverdue ? "Gecikti ⚠️" : "Sıradaki İlaç";
+                w.classList.toggle('overdue', isOverdue);
+                document.getElementById('nextPillName').innerText = next.ad;
+                document.getElementById('nextPillTime').innerText = next.s;
+            } else {
+                w.classList.remove('overdue');
+                document.getElementById('widgetTitle').innerText = tasks.length ? "Harikasın ✨" : "Durum";
+                document.getElementById('nextPillName').innerText = tasks.length ? "Görevin Bitti!" : "Plan Yok";
+                document.getElementById('nextPillTime').innerText = tasks.length ? "🎉" : "--:--";
+            }
+
+            if(!soft) anime({ targets: '.t-item', translateX: [-15, 0], opacity: [0, 1], delay: anime.stagger(50), easing: 'easeOutExpo' });
+        }
+    </script>
+</body>
+</html>
